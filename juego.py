@@ -185,6 +185,10 @@ class Juego:
         self.personaje = Personaje()
         self.all_sprites.add(self.personaje)
 
+        # Establecer un temporizador para la generación de enemigos
+        self.tiempo_ultimo_enemigo = pygame.time.get_ticks()
+        self.intervalo_enemigos = 1000
+
         # Crear y agregar enemigos al grupo
         for _ in range(20):
             enemy = Enemigo(self.personaje, self.all_sprites, self.enemigos)
@@ -212,6 +216,11 @@ class Juego:
                     self.personaje.izquierda = False
                     self.personaje.derecha = False
                     self.personaje.cuentaPasos = 0
+    
+    def generar_enemigo(self):
+        enemy = Enemigo(self.personaje, self.all_sprites, self.enemigos)
+        self.enemigos.add(enemy)
+        self.all_sprites.add(enemy)
 
     def actualizar_pantalla(self):
         self.PANTALLA.fill((0, 0, 0))
@@ -227,7 +236,17 @@ class Juego:
 
     def ejecutar_juego(self):
         while True:
+            tiempo_actual = pygame.time.get_ticks()
+
+            # Manejar eventos
             self.manejar_eventos()
+
+            # Generar enemigos cada cierto intervalo de tiempo
+            if tiempo_actual - self.tiempo_ultimo_enemigo > self.intervalo_enemigos:
+                self.generar_enemigo()
+                self.tiempo_ultimo_enemigo = tiempo_actual
+
+            # Actualizar pantalla
             self.actualizar_pantalla()
 
 if __name__ == "__main__":
