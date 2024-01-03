@@ -1,5 +1,6 @@
 import pygame
 import sys
+import random
 from pygame.locals import *
 
 class Personaje(pygame.sprite.Sprite):
@@ -30,8 +31,8 @@ class Personaje(pygame.sprite.Sprite):
         ]
 
         # Posición y variables de movimiento
-        self.x = 0
-        self.px = 50
+        self.x = 6
+        self.px = 500
         self.py = 500
         self.ancho = 50
         self.velocidad_x = 1
@@ -145,6 +146,25 @@ class Personaje(pygame.sprite.Sprite):
     def dibujar(self, pantalla):
         pantalla.blit(self.image, self.rect)
 
+class Enemigo(pygame.sprite.Sprite):
+    def __init__(self, player, all_sprites, enemigos):
+        super().__init__()
+        self.player = player
+        self.all_sprites = all_sprites
+        self.enemigos = enemigos
+        self.image = pygame.image.load('imagenes/enemigo/enemigo1.png')
+        self.rect = self.image.get_rect()
+        self.rect.x = random.choice([0, 1000])
+        self.rect.y = 500 
+
+    def update(self):
+        self.rect.x -= 1
+        if pygame.sprite.collide_rect(self, self.player):
+            self.player_die()
+
+    def player_die(self):
+        print("muerto :C")
+
 
 class Juego:
     def __init__(self):
@@ -154,9 +174,23 @@ class Juego:
         self.fondo = pygame.image.load("imagenes/paisaje.jpg")
         self.icono = pygame.image.load('imagenes/Warrior_1/quieto.png')
         pygame.display.set_icon(self.icono)
-        
         self.personaje = Personaje()
-        # Resto del código...
+        self.enemigos = pygame.sprite.Group()  # Grupo de enemigos
+
+        # Crear grupo de todos los sprites y grupo de enemigos
+        self.all_sprites = pygame.sprite.Group()
+        self.enemigos = pygame.sprite.Group()
+
+        # Agregar jugador y enemigos a los grupos respectivos
+        self.personaje = Personaje()
+        self.all_sprites.add(self.personaje)
+
+        # Crear y agregar enemigos al grupo
+        for _ in range(20):
+            enemy = Enemigo(self.personaje, self.all_sprites, self.enemigos)
+            self.enemigos.add(enemy)
+            self.all_sprites.add(enemy)
+        
 
     def manejar_eventos(self):
         for event in pygame.event.get():
@@ -184,6 +218,11 @@ class Juego:
         self.PANTALLA.blit(self.fondo, (0, 0))
         self.personaje.update()
         self.personaje.dibujar(self.PANTALLA)
+
+        # Actualizar y dibujar enemigos
+        self.enemigos.update()
+        self.enemigos.draw(self.PANTALLA)
+
         pygame.display.update()
 
     def ejecutar_juego(self):
